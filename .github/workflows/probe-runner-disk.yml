@@ -1,0 +1,34 @@
+name: Probe runner disk
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  measure:
+    name: Measure ubuntu-latest disk
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Record CPU, memory, and disk
+        run: |
+          set -u
+          echo "=== identity ==="
+          echo "runner=${RUNNER_NAME:-}"
+          echo "image=${ImageOS:-} ${ImageVersion:-}"
+          uname -a
+          . /etc/os-release
+          echo "pretty=${PRETTY_NAME}"
+          echo "nproc=$(nproc)"
+          echo "=== memory ==="
+          free -b
+          echo "=== block ==="
+          lsblk -b -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINTS
+          echo "=== mounts ==="
+          df -B1 -T
+          echo "=== root ==="
+          df -B1 --output=source,size,used,avail,pcent,target /
+          echo "=== workspace ==="
+          df -B1 --output=source,size,used,avail,pcent,target "${GITHUB_WORKSPACE}"
